@@ -14,7 +14,6 @@ class BooksTest < ApplicationSystemTestCase
     visit books_url
     click_on "New Book"
 
-    fill_in "Book", with: @book.Book
     fill_in "Author", with: @book.author_id
     fill_in "Title", with: @book.title
     fill_in "Year", with: @book.year
@@ -28,7 +27,6 @@ class BooksTest < ApplicationSystemTestCase
     visit books_url
     click_on "Edit", match: :first
 
-    fill_in "Book", with: @book.Book
     fill_in "Author", with: @book.author_id
     fill_in "Title", with: @book.title
     fill_in "Year", with: @book.year
