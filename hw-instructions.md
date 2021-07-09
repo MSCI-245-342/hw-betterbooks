@@ -1,12 +1,17 @@
 # hw-betterbooks
 
-In this assignment, you are going to add some features to an existing web app.  The web app, BetterBooks, uses a subset of the tables you worked with in the last homework.  
++ Author: Mark D. Smucker
++ Version history: Updated July 2021 to work with Rails 6.1 and Ruby 3 and improve material and tasks.
+
+## Introduction
+
+In this assignment, you are going to add some features to an existing web app.  The web app, BetterBooks, uses a subset of the tables you worked with in GoodBooks.  
 
 First, I'm going to show you how I made the web app, and then I'll explain the tasks for you to complete.
 
 ## Background Reading
 
-While the web and the textbook have basic coverage of Rails, I found the following chapters from [Learning Rails 5](https://ocul-wtl.primo.exlibrisgroup.com/permalink/01OCUL_WTL/5ob3ju/alma999986583426005162) to be the most helpful to understand what was going on:
+While the web and the textbook have basic coverage of Rails, I found the following chapters from [Learning Rails 5](https://ocul-wtl.primo.exlibrisgroup.com/permalink/01OCUL_WTL/5ob3ju/alma999986583426005162) to be the most helpful to understand what was going on (first visit the book via the library link to gain access):
 1. [Chapter 5: Accelerating Development with Scaffolding](https://learning.oreilly.com/library/view/learning-rails-5/9781491926185/ch05.html#accelerating_development_with_scaffoldin)
 
 1. [Chapter 6: Presenting Models with Forms](https://learning.oreilly.com/library/view/learning-rails-5/9781491926185/ch06.html#presenting_models_with_forms_content)
@@ -23,7 +28,7 @@ While we are using Rails 6, the book above covers Rails 5.  Chapter 6, uses form
 
 You are reading these instructions having cloned your GitHub repository to a directory named `betterbooks`.  
 
-If you do not have a directory named betterbooks, stop!  Go back to the instructions in Learn and correctly clone your repository.
+**Warning:** If you do not have a directory named betterbooks, **stop!**  Go back to the instructions in Learn and correctly clone your repository.
 
 To get up and going, do the following:
 ```
@@ -536,7 +541,7 @@ Note that I put a link in the comment for more info.  There is no way I'd rememb
 
 I was careful to order the authors by name to make the dropdown sensible to use.
 
-Long term, my user interface will not work.  Who wants to select an author from a dropdown with thousands of author names?  Not me.  Nevertheless, the functionality is better than it was, and lets us get a first version of the system up and running.  We can always improve it in the future.  Plus, my real goal was to demo a dropdown for you.
+Long term, my user interface will be unwieldy.  Who wants to select an author from a dropdown with thousands of author names?  Not me.  Nevertheless, the functionality is better than it was, and it lets us get a first version of the system up and running.  We can always improve it in the future.  Plus, my real goal was to demo a dropdown for you.
 
 ## Query Parameters
 
@@ -613,33 +618,66 @@ Now that you've seen how BetterBooks works, you need to add some feature improve
 
 For each change you make, you are required to write a suitable test case to verify the functioning of the change.  If a change needs more than one test case to verify its functionality, you should write multiple test cases.
 
-+ In the directory named `test`, make a directory named `manual`.   in your app and in this directory, create a file named `test-cases.txt`.  
++ In the directory named `test/manual` there is a file named `test-cases.txt`.  We will store manual test cases in this file.  A manual test is one that a person has to execute by hand.  An automated test case is run by the computer.  In MSCI 342 we will throughly cover automated testing.
 
-+ In this file, using clear formatting, write your test cases to explain to someone how to test that your changes work.  A test case should explain how to set it up, how to input data, and what the expected results are.  
-
-For example, a test case for deleting a book could be:
-
-1. From the homepage, click on 'Books'. 
-
-1. Click on the link 'New Book' and create a new book with title='test delete' and year=2020 and any existing author.
-
-1. Click on "Show Books"
-
-1. Click the "Delete" button next to the "test delete" book.
-
-1. Expected results: A message should be displayed saying "Book was successfully deleted." and the "test delete" book should no longer be listed.
++ In this file, using clear formatting, write your test cases to explain to someone how to test that your changes work.  A test case should explain how to set it up, how to input data, and what the expected results are.  The file contains an example to follow.
 
 #### Changes to make
 
 Make the following changes to the BetterBooks app and commit and push them and your test cases to GitHub when you have them working.
 
-1. Change Users so that user input for their email address is always downcased before saving in the database.  
-   
-1. Change the app such that no two users may have the same email address.  Make sure the database disallows users with the same email address, and make sure the User model does a uniqueness validation so that web users are given the correct feedback when they enter an email that has already been used.    
+##### Task: Downcased email
 
-1. Change authors to be represented with both a first and last name.  The first and last name should be separate attributes in the Author model and database. Authors must always have both a first and last name (non-blank).  First and last names may each be a maximum of 35 characters long. The web app user interface should make use of Author model validations to give feedback to users when their input is invalid.  
+Change the app so that user input of email addresses is always downcased before saving in the database. Your change should be made in the User model.  As you can read in [Active Record Callbacks](https://guides.rubyonrails.org/active_record_callbacks.html) we can instruct our models to run code before and after certain actions.  For example, we can run code to downcase the email whenever the model is told to save itself.  Add a `before_save` callback to the User model that downcases the email.
 
-1. Currently, the confirm_delete page for Authors, tells the user that they first have to delete all books by an author before the author can be deleted.  Change the functionality so that the user is presented with a message explaining that if the author has any books, they must confirm they also want all books deleted.  If the author has any books in the database, provide a listing of the books. When the user confirms the delete, the author and all of the author's books are deleted and the user is informed that the "Author and author's book(s) were successfully deleted." on the authors index page (/authors).
+##### Task: Unique email
+
+Change the app such that no two users may have the same email address.  Make sure the database disallows users with the same email address, and make sure the User model does a uniqueness validation so that web users are given the correct feedback when they enter an email that has already been used.  For the database, write and run a **new** migration that adds an index to the users table such that the email attribute must be unique.  See [Active Record migrations](https://guides.rubyonrails.org/active_record_migrations.html) and [add_index](https://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_index).
+
+##### Task: Deleting authors
+
+Currently, the confirm_delete page for Authors, tells the user that they first have to delete all books by an author before the author can be deleted.  Change the functionality so that the user is presented with a message explaining that if the author has any books, they must confirm they also want all books deleted.  If the author has any books in the database, provide a listing of the books. When the user confirms the delete, the author and all of the author's books are deleted and the user is informed that the "Author and author's book(s) were successfully deleted." on the authors index page (/authors).  You may not use a "cascade on delete" in the database, nor may you use Rails features to automatically delete all books on the destruction of an author.  Do not change the authors table in the database.  We want the deletion of books to never be accidentally done with the deletion of an author.
+
+
+##### Task: Fiction or Nonfiction (Book Genre)
+
+Currently, we only store fiction books in our database.  We'd like to be able to list non-fiction titles, too. When we create or edit a book, we'd like to record if it is fiction or not.  
+
++ First clean out your database to be empty:
+  + `rails db:drop`
+  + `rails db:create`
+  + `rails db:migrate`
+
++ Create and run a **new** migration to [add_column](https://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_column) of a Boolean attribute `is_fiction` to the books table.  Be sure the column is NOT NULL.  Remember to check the database with psql to see that the column was added as expected.  Add a validation to the Book model to make sure the attribute is always set on creating a new book:
+```ruby
+validates :is_fiction, inclusion: [true, false]
+```
++ Update your dev-data in db/seeds.rb to work with the new attribute on the Book model.  Add these non-fiction books:
+  + The Right Stuff, by Tom Wolfe, 1979.
+  + Into the Wild, by Jon Krakauer, 1996.
+  + Into Thin Air, by Jon Krakauer, 1997.
+  + Ship of Gold in the Deep Blue Sea, by Gary Kinder, 2009. 
+
++ Load the seed data: `rails db:seed` and verify the data is in the database.
+If you run into problems, debug (use `byebug` and your `rails console`) and go through this sequence to reset:
+  + `rails db:drop`
+  + `rails db:create`
+  + `rails db:migrate`
+  + `rails db:seed`
+
++ Modify your Book views to show the new attribute in the /books page.  The column should be to the right of Author and be labeled "Genre" and fiction books should have a genre of "fiction" and nonfiction books should have a genre of "nonfiction".  Suggestion: write a method named `genre` on the Book model to return "fiction" or "nonfiction" as appropriate for that book.  Then use the `genre` method in your view.  
+
++ Update your books_controller to allow a `:is_fiction` parameter to be passed in via params.
+
+ + Modify your app to allow the input and editing of Book genre (fiction/nonfiction).  For creating a new book and editing an existing book, use a checkbox for the field:
+```erb
+<div class="field">
+      <%= form.check_box :is_fiction %>
+      <%= form.label :is_fiction, style: "display: inline" %>
+</div>
+```
+
++ Modify the app to allow books to be sorted by genre (fiction/non-fiction) in the same manner that we can sort books by author, title, and year by clicking on the table header for that column in the /books page.  The default order should be that fiction books are listed first, and then non-fiction books.  Within each genre, the sort order should be by title (primary key is genre, the secondary key is title).
 
 ### Submitting your work
 
