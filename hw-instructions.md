@@ -12,11 +12,11 @@ First, I'm going to show you how I made the web app, and then I'll explain the t
 ## Background Reading
 
 While the web and the textbook have basic coverage of Rails, I found the following chapters from [Learning Rails 5](https://ocul-wtl.primo.exlibrisgroup.com/permalink/01OCUL_WTL/5ob3ju/alma999986583426005162) to be the most helpful to understand what was going on (first visit the book via the library link to gain access):
-1. [Chapter 5: Accelerating Development with Scaffolding](https://learning.oreilly.com/library/view/learning-rails-5/9781491926185/ch05.html#accelerating_development_with_scaffoldin)
+1. Chapter 5: Accelerating Development with Scaffolding
 
-1. [Chapter 6: Presenting Models with Forms](https://learning.oreilly.com/library/view/learning-rails-5/9781491926185/ch06.html#presenting_models_with_forms_content)
+1. Chapter 6: Presenting Models with Forms
 
-1. [Chapter 7: Strengthening Models with Validation](https://learning.oreilly.com/library/view/learning-rails-5/9781491926185/ch07.html#strengthening_models_with_validation)
+1. Chapter 7: Strengthening Models with Validation
 
 I will not cover the material in this homework at the same level of detail as this book or various reference manuals.  
 
