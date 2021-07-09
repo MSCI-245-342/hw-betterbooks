@@ -638,7 +638,6 @@ Change the app such that no two users may have the same email address.  Make sur
 
 Currently, the confirm_delete page for Authors, tells the user that they first have to delete all books by an author before the author can be deleted.  Change the functionality so that the user is presented with a message explaining that if the author has any books, they must confirm they also want all books deleted.  If the author has any books in the database, provide a listing of the books. When the user confirms the delete, the author and all of the author's books are deleted and the user is informed that the "Author and author's book(s) were successfully deleted." on the authors index page (/authors).  You may not use a "cascade on delete" in the database, nor may you use Rails features to automatically delete all books on the destruction of an author.  Do not change the authors table in the database.  We want the deletion of books to never be accidentally done with the deletion of an author.
 
-
 ##### Task: Fiction or Nonfiction (Book Genre)
 
 Currently, we only store fiction books in our database.  We'd like to be able to list non-fiction titles, too. When we create or edit a book, we'd like to record if it is fiction or not.  
@@ -679,15 +678,17 @@ If you run into problems, debug (use `byebug` and your `rails console`) and go t
 
 + Modify the app to allow books to be sorted by genre (fiction/non-fiction) in the same manner that we can sort books by author, title, and year by clicking on the table header for that column in the /books page.  The default order should be that fiction books are listed first, and then non-fiction books.  Within each genre, the sort order should be by title (primary key is genre, the secondary key is title).
 
+##### Task: Deploy to Heroku
+
+Once you have a working app, deploy your app to Heroku with an app name of betterbooks-watiamUsername.  Replace "watiamUsername" with your WatIAM username.  Follow the directions for deploying to Heroku from the [BasicBooks](https://github.com/MSCI-245-342/lab-hw-basicbooks/blob/main/instructions.md) assignment.  Be sure to also load the seed data.  For this homework, we'll load the seed data into production for demo purposes.
+
+##### Task: Complete the README.md
+
+Edit the README.md file and properly acknowledge people and resources and record assistance given.
+
 ### Submitting your work
 
 Commit and push all work to GitHub.  The time of your last commit is the time of your submission.  If you fail to push your work to GitHub, you will only get credit for the work actually in GitHub!  We cannot check your work unless you have pushed it to GitHub.  
-
-
-
-
-
-
 
 
 
