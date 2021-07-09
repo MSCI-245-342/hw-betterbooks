@@ -6,7 +6,7 @@ First, I'm going to show you how I made the web app, and then I'll explain the t
 
 ## Background Reading
 
-While the web and the textbook have basic coverage of Rails, I found the following chapters from [Learning Rails 5](https://learning.oreilly.com/library/view/learning-rails-5/9781491926185/) to be the most helpful to understand what was going on (reminder: as a UWaterloo student, you have free access to this book):
+While the web and the textbook have basic coverage of Rails, I found the following chapters from [Learning Rails 5](https://ocul-wtl.primo.exlibrisgroup.com/permalink/01OCUL_WTL/5ob3ju/alma999986583426005162) to be the most helpful to understand what was going on:
 1. [Chapter 5: Accelerating Development with Scaffolding](https://learning.oreilly.com/library/view/learning-rails-5/9781491926185/ch05.html#accelerating_development_with_scaffoldin)
 
 1. [Chapter 6: Presenting Models with Forms](https://learning.oreilly.com/library/view/learning-rails-5/9781491926185/ch06.html#presenting_models_with_forms_content)
@@ -32,29 +32,13 @@ bundle install --without production
 rails db:create db:migrate db:seed
 rails server -b 0.0.0.0
 ```
-You should now be able to go to your "Box URL in Codio and see the web app.
+You should now be able to go to your "Box URL" in Codio and see the web app.
 
 ## How I built BetterBooks 
 
 ### Basic empty app
 
-After cloning an empty repository to a directory named betterbooks, I ran the following command: (Do **not** do this! You already have the working app.)
-```
-rails new . --skip-javascript --skip-test --skip-action-mailer --skip-action-mailbox --skip-action-text --skip-action-cable --skip-active-storage --skip-keeps --skip-spring --skip-sprockets --skip-turbolinks --database=postgresql
-```
-This makes the stripped down version of a Rails app and does not use javascript, which we haven't learned.
-
-Then, in the Gemfile, I commented out the `jbuilder` gem.  This prevents all sort of JSON code being generated, which we don't need.
-
-I then reran bundle install, and created and migrated the database.
-
-To get the web app to work on Codio, I added the following to `config/environments/development.rb`:
-```
-config.hosts << /[a-z0-9]+\-[a-z0-9]+\-3000\.codio\.io/
-```
-this should allow it to work on any Codio host in development mode.
-
-I then tested that I could get `yay! you're on rails` with `rails server -b 0.0.0.0` and going to my "Box URL".
+After cloning an empty repository to a directory named betterbooks, I followed the setup directions for a new rails app from the [GoodBooks homework](https://github.com/MSCI-245-342/hw-goodbooks/blob/master/hw-instructions.md).
 
 ### Scaffolding
 
@@ -62,9 +46,9 @@ We've learned in previous homework about using Rails to generate models, control
 
 I generated three models: Author, User, Book, and their associated controllers and migrations and routes using these commands:
 ```
-rails generate scaffold User name:string email:string
-rails generate scaffold Author name:string
-rails generate scaffold Book title:string year:integer author:references
+rails generate scaffold User name:string email:string --no-fixture
+rails generate scaffold Author name:string --no-fixture
+rails generate scaffold Book title:string{255} year:integer author:references --no-fixture
 ```
 As you can see, these generate commands are effectively the same as I used for generating the models and migrations in the last homework, except instead of asking for a migration or model, I ask for a scaffold.  
 
@@ -106,8 +90,6 @@ With our proper database design, we have a strong first line of defense against 
 
 We cannot easily do all of our data control at the database level.  Certainly we can write check constraints, but lots of these will be easier to implement in our models.  For example, we can check email addresses for a correct format much easier in our User model than in the database.
 
-In past homework, we've hacked together our own checks on the data being input from the user.  
-
 Rails has lots of support for validating user input and making sure that we don't save garbage to our database.  
 
 ### Validations added to models
@@ -146,16 +128,82 @@ The beauty of this is that we use validations as follows in the web app:
 
 We'll look at the form later in more detail.
 
+#### Rails console
+
+If you haven't noticed yet, I think the rails console is an awesome tool for rails development.
+
+Let's see another reason why.  Do the following:
+```
+rails console --sandbox
+```
+This starts up the console in sandbox mode.  In sandbox mode, any changes you make to the database while using the console are rolled back when you exit.  Keep in mind that the rails console in regular mode is also great if you do want to change your development database and add or change data.
+
+Okay, so we've got some cool new validations on our Author model.  Let's see what they can do.  First, let's make a new Author:
+```
+a = Author.new
+```
+When you do this, the console prints out the value returned by the expression.  In this case, it is the value of the variable `a`.  You'll see that you have an Author object with all of its attributes set to nil.  Let's try to save this author to the database:
+```
+a.save
+```
+What did the console say was returned?  For me, and hopefully for you, it was `false`.  Why false?  Well, the save did not succeed.  We did not save the author to the database.  You didn't even see it try and run any SQL.  What happened?  Well, to see that, we should look at the errors:
+```
+a.errors
+```
+You'll see that the `errors` object tells us that something was wrong with the value we supplied for the `name` attribute.  To see the errors messages, we do:
+```
+a.errors.messages
+```
+And we see that there is a hash that maps from `:name` to the value `"can't be blank"`. 
+
+What is going on?
+
+We added a `validates_presence_of :name` validation to the Author model.  When we ask to save the author object, the validations are checked.  If any of the valdiations fail, then the model is not saved to the database and appropriate error messages are created and stored in `errors`.  For the failing attributes, we can look up in `errors.messages` a message to explain the issue.  The `errors` and `errors.messages` will be used by Rails to give feedback to users about their input if it fails to pass our validations.
+
+When you develop your own app, and you create validations for models, you should go into the rails console and check that the validations actually work.  So far, we've seen that we cannot have `nil` for the `name` attribute, which is one thing that the `validates_presence_of` validations checks for, and so that part seems to be working.
+
+Okay, let's set the name attribute to the empty string and try to save it:
+```
+a.name = ""
+a.save
+```
+This also returns false.  If you look at `a.errors.messages`, you'll see it telling us that `name` cannot be blank.  So, yes, `validate_presence_of` protects against `nil` and an empty string.
+
+Let's try again:
+```
+a.name = "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789"
+a.save
+```
+We get false.  If we look at `a.errors.messages`, we see:
+```
+3.0.1 :004 > a.errors.messages
+ => {:name=>["is too long (maximum is 70 characters)"]} 
+```
+
+Okay, again:
+```
+a.name = "Bob"
+a.save
+```
+
+Yea!  Now it ran the SQL needed to insert "Bob" into the authors table.  Look at `a.errors` now:
+```
+a.errors
+```
+and you'll see that it is an empty array.  Right.  No errors.  That is why it was saved.
+
+To exit the console, type `quit`.
+
 #### User model validations:
 
 To the User model, I added the following validations:
 
 ```ruby
-    validates_presence_of :name
-    validates_length_of :name, maximum: 70    
-    validates_presence_of :email
-    validates_length_of :email, maximum: 255
-    validates_format_of :email, with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i 
+  validates_presence_of :name
+  validates_length_of :name, maximum: 70    
+  validates_presence_of :email
+  validates_length_of :email, maximum: 255
+  validates_format_of :email, with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i 
 ```
 
 The new one here is [validates_format_of](https://api.rubyonrails.org/classes/ActiveModel/Validations/HelperMethods.html#method-i-validates_format_of) to make sure the email is the correct format.
@@ -177,7 +225,6 @@ The [validates_numericality_of](https://api.rubyonrails.org/classes/ActiveModel/
 
 Go, use the web app now and try adding invalid data into the app.  
 
-
 ### Other Validations of Use 
 
 There are lots of other validations possible, and you can write custom validations, but these are two important ones:
@@ -190,7 +237,7 @@ We can make sure an entry is unique in the database.  For example, many authenti
 validates :email, uniqueness: true
 ```
 
-If we have a uniqueness validation on a field, we should also enforce this
+If we have a uniqueness validation on a field, we should also always enforce this
 in the database with a unique index.
 
 We would use this in a migration:
@@ -262,10 +309,10 @@ At this point, I was ready to start working on the controllers and views.
 First up, I made the controller for the home page:
 
 ```
-rails generate controller StaticPages home
+rails generate controller StaticPages home --skip-routes
 ```
 
-Since want the controller to simply render the home.html.erb view, I don't need to change the controller.  In `views/static_pages/home.html.erb` I added:
+Since want the controller to simply render the home.html.erb view, I don't need to change the controller.  In `app/views/static_pages/home.html.erb` I added:
 
 ```
 <h1>BetterBooks</h1>
@@ -304,17 +351,6 @@ redirect_to @user
 ```
 
 seems mysterious.  How in the world does `redirect_to` know what to do?  Short answer is that with RESTful routes and following the naming conventions, rails can figure out that is @user has an id of 6, that it should redirect to a url with /users/6 .  If this bothers you (it kinda bothers me), you can always call `user_url(@user)`, which at least shows that we're using a method that we know should produce a url to /user/id where the id will come from the User object we pass in to it.
-
-You can get access to the helper methods produced by your routes in the rails console by using the `app` object. For example:
-
-```
-2.6.6 :003 > u = User.first
-
-2.6.6 :008 > app.user_path(u)
- => "/users/1"
-```
-
-so you can at least play with them to see how they work.
 
 Ruby allows us to have private methods, and in the UsersController we have this code:
 
@@ -426,7 +462,7 @@ Also, when we look at the HTML, we see that `form_with` know where to submit the
 it knows this again from our RESTful use of models.  In the `new` action handler of the UsersController, we created an empty User object and stored it in `@user`, which eventually is handed to `form_with` via the `user` variable that got its value via the `render` call.  Anyways, **because the user object 
 has not been persisted to the database, `form_with` knows that this FORM should POST to "/users" because that is how we create new users!**  
 
-If `form_with` gets a model object that has been persisted, then it "knows" that this needs to be a FORM that submits a PATCH to "/users/", for that is how we update a model.  Details in [manual](https://api.rubyonrails.org/v6.0.3.2/classes/ActionView/Helpers/FormHelper.html#method-i-form_with).
+If `form_with` gets a model object that has been persisted, then it "knows" that this needs to be a FORM that submits a PATCH to "/users/", for that is how we update a model.  Details in [manual](https://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_with).
 
 And, for the last great trick of `form_with`, when we supply a model object, the values of the attributes of the model object are used to populate the input fields in the FORM.  
 
@@ -452,7 +488,7 @@ For Users and Authors, I added new "confirm_delete" routes and actions to the Us
 
 ```html
 <%= form_with model: @user, local: true, method: 'delete' do |f| %>
-<%= f.submit "Confirm Delete" %>
+  <%= f.submit "Confirm Delete" %>
 <% end %>
 ```
 
@@ -540,7 +576,7 @@ In the BooksController index method, we have:
   end
 ```
 
-So, all we do is call Book.order_by and pass in the `params[:order_by]`, which may be `nil` if no query parameter was provided.
+So, all we do is call `Book.order_by` and pass in the `params[:order_by]`, which may be `nil` if no query parameter was provided.
 
 This is an example of passing functionality down to the model.  I could write a bunch of code in the controller to manage sorting of the books, but the controller shouldn't be doing that sort of work.  That is model sort of work.  So, in the Book model we have:
 
@@ -565,7 +601,7 @@ Some things to notice:
 
 1. When I sort by year and author, I have a secondary sort on title and year.  So, when sorting by year, within each year we sort by title.  When sorting by author, we order by the author's name, and then by year of book.
 
-1. To sort by author name, I needed to join Book with the authors table.  (To figure this out, I worked in rails console until I got the query right.)
+1. To sort by author name, I needed to join Book with the authors table.  (To figure this out, I worked in rails console until I got the query right. Think of the rails console as a workshop to try out code until you figure it out.)
 
 1. Default sort is by title. So, our books will always be at least sorted by title even if no request is made to sort them.  Users almost never want unsorted lists of material.  It makes sense to sort a table by default on the first, leftmost column that is displayed to the user.
 
@@ -577,7 +613,7 @@ Now that you've seen how BetterBooks works, you need to add some feature improve
 
 For each change you make, you are required to write a suitable test case to verify the functioning of the change.  If a change needs more than one test case to verify its functionality, you should write multiple test cases.
 
-+ Create a directory named `testing` in your app and in this directory, create a file named `test-cases.txt`.  
++ In the directory named `test`, make a directory named `manual`.   in your app and in this directory, create a file named `test-cases.txt`.  
 
 + In this file, using clear formatting, write your test cases to explain to someone how to test that your changes work.  A test case should explain how to set it up, how to input data, and what the expected results are.  
 
